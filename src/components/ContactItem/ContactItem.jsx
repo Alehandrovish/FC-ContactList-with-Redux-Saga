@@ -1,9 +1,8 @@
 import { useSelector, useDispatch } from "react-redux";
 import {
-  deleteContact,
+  deleteContactAction,
   setEditMode,
 } from "../../store/actions/contactsActions";
-import api from "../../api/contact-service";
 import "./ContactItem.css";
 
 function ContactItem({ contact }) {
@@ -14,9 +13,7 @@ function ContactItem({ contact }) {
 
   function onContactDelete(event) {
     event.stopPropagation();
-    api.delete(`/${id}`).then(() => {
-      dispatch(deleteContact(id));
-    });
+    dispatch(deleteContactAction(id));
   }
 
   function onEdit() {

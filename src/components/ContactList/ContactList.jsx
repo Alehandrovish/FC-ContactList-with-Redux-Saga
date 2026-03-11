@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import PropTypes from "prop-types";
 import ContactItem from "../ContactItem/ContactItem";
-import { getContacts, setAddMode } from "../../store/actions/contactsActions";
-import api from "../../api/contact-service";
+import {
+  getContactsAction,
+  setAddMode,
+} from "../../store/actions/contactsActions";
 import "./ContactList.css";
 
 function ContactList() {
@@ -11,10 +12,8 @@ function ContactList() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    api.get("/").then(({ data }) => {
-      dispatch(getContacts(data));
-    });
-  }, []);
+    dispatch(getContactsAction());
+  }, [dispatch]);
 
   function onAddMode() {
     dispatch(setAddMode());
@@ -30,16 +29,5 @@ function ContactList() {
     </section>
   );
 }
-
-ContactList.propTypes = {
-  contacts: PropTypes.array.isRequired,
-  onDelete: PropTypes.func,
-  onEditMode: PropTypes.func,
-  idOfItem: PropTypes.any,
-  onAddMode: PropTypes.func,
-};
-ContactList.defaultProps = {
-  contacts: [],
-};
 
 export default ContactList;
