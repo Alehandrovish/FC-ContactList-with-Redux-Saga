@@ -1,7 +1,8 @@
-import { createStore, applyMiddleware } from "redux";
+import { configureStore } from "@reduxjs/toolkit";
 import logger from "redux-logger";
-import { composeWithDevTools } from "@redux-devtools/extension";
-import contactReduser from "./redusers/contactsReduser";
+import contactReduser from "./slices/contactSlice";
 
-const middleware = applyMiddleware(logger);
-export default createStore(contactReduser, composeWithDevTools(middleware));
+export default configureStore({
+  reducer: contactReduser,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+});

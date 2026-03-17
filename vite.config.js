@@ -7,5 +7,6 @@ export default defineConfig({
   plugins: [react(), Inspect()],
   server: {
     port: 3000,
+    open: true,
   },
 });

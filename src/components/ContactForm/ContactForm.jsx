@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
-import api from "../../api/contact-service";
 import {
   deleteContact,
   addContact,
   editContact,
-} from "../../store/actions/contactsActions";
+} from "../../store/slices/contactSlice";
 import "./ContactForm.css";
 
 function ContactForm() {
@@ -34,21 +33,15 @@ function ContactForm() {
   function onFormSubmit(event) {
     event.preventDefault();
     if (id) {
-      api.put(`/${id}`, localFormData).then(({ data }) => {
-        dispatch(editContact(data));
-      });
+      dispatch(editContact(localFormData));
     } else {
       const newContact = { ...localFormData, id: nanoid() };
-      api.post("/", newContact).then(({ data }) => {
-        dispatch(addContact(data));
-      });
+      dispatch(addContact(newContact));
     }
   }
 
   function onDeleteContact() {
-    api.delete(`/${id}`).then(() => {
-      dispatch(deleteContact(id));
-    });
+    dispatch(deleteContact(id));
   }
 
   return (
