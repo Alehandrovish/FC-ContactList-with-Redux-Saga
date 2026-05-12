@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import Button from "@mui/material/Button";
 import ContactItem from "../ContactItem/ContactItem";
 import { getContacts, setAddMode } from "../../store/slices/contactSlice";
+import { initialPersonData } from "../../model/initialPersonData";
 import "./ContactList.css";
 
-function ContactList() {
+function ContactList({ formikRef }) {
   const contacts = useSelector((state) => state.contacts);
   const dispatch = useDispatch();
 
@@ -14,6 +16,9 @@ function ContactList() {
 
   function onAddMode() {
     dispatch(setAddMode());
+    formikRef.current.resetForm({
+      values: initialPersonData,
+    });
   }
   return (
     <section className="contacts-block">
@@ -22,7 +27,13 @@ function ContactList() {
           return <ContactItem key={contact.id} contact={contact} />;
         })}
       </section>
-      <button onClick={onAddMode}>New</button>
+      <Button
+        variant="outlined"
+        style={{ alignSelf: "center" }}
+        onClick={onAddMode}
+      >
+        New
+      </Button>
     </section>
   );
 }

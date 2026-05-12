@@ -1,112 +1,114 @@
-import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
+import { Form, Formik } from "formik";
+import * as Yup from "yup";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 import {
   deleteContact,
   addContact,
   editContact,
 } from "../../store/slices/contactSlice";
+import TextInputField from "../TextInputField/TextInputField";
 import "./ContactForm.css";
 
-function ContactForm() {
+function ContactForm({ formikRef }) {
   const formData = useSelector((state) => state.personData);
-  const [localFormData, setLocalFormData] = useState(formData);
 
-  useEffect(() => {
-    setLocalFormData(formData);
-  }, [formData]);
+  const id = formData.id;
 
   const dispatch = useDispatch();
 
-  const { id, firstName, lastName, email, phone } = localFormData;
-
-  function onInputChange(event) {
-    const { name, value } = event.target;
-    setLocalFormData({ ...localFormData, [name]: value });
-  }
-
-  function clearInput(event) {
-    const inputSibling = event.target.parentNode.firstChild;
-    setLocalFormData({ ...localFormData, [inputSibling.name]: "" });
-  }
-
-  function onFormSubmit(event) {
-    event.preventDefault();
-    if (id) {
-      dispatch(editContact(localFormData));
+  function onFormSubmit(values, actions) {
+    if (values.id) {
+      dispatch(editContact(values));
     } else {
-      const newContact = { ...localFormData, id: nanoid() };
-      dispatch(addContact(newContact));
+      dispatch(addContact({ ...values, id: nanoid() }));
     }
+    actions.resetForm({
+      values: formData,
+    });
   }
 
   function onDeleteContact() {
     dispatch(deleteContact(id));
   }
 
+  const regexValidator = (regex) =>
+    function (message) {
+      return this.test("regex-validator", message, function (value) {
+        const { path, createError } = this;
+
+        if (!value) return true;
+
+        return regex.test(value) || createError({ path, message });
+      });
+    };
+
+  Yup.addMethod(
+    Yup.string,
+    "myValidationEmail",
+    regexValidator(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+  );
+
+  Yup.addMethod(Yup.string, "myValidationPhone", regexValidator(/^\+?\d{12}$/));
+
+  const shema = Yup.object().shape({
+    email: Yup.string()
+      .myValidationEmail("Not correct email name")
+      .required("Email is required"),
+    phone: Yup.string()
+      .myValidationPhone("Not correct phone number")
+      .required("Phone is required"),
+  });
+
+  const contactForm = ({ isValid, setFieldValue }) => {
+    return (
+      <Form>
+        <div className="input-block">
+          <TextInputField name="firstName" label="First name"></TextInputField>
+          <TextInputField name="lastName" label="Last name"></TextInputField>
+          <TextInputField name="email" label="Email"></TextInputField>
+          <TextInputField name="phone" label="Phone"></TextInputField>
+        </div>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={5}>
+          <Button
+            variant="outlined"
+            type="submit"
+            startIcon={<SaveIcon />}
+            disabled={!isValid}
+          >
+            Save
+          </Button>
+          {formData.id ? (
+            <Button
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              type="button"
+              onClick={onDeleteContact}
+            >
+              Delete
+            </Button>
+          ) : (
+            ""
+          )}
+        </Stack>
+      </Form>
+    );
+  };
+
   return (
-    <form onSubmit={onFormSubmit}>
-      <div className="input-block">
-        <div className="form-item">
-          <input
-            name="firstName"
-            type="text"
-            placeholder="First name"
-            value={firstName}
-            onChange={onInputChange}
-          />
-          <span className="btn-clear" onClick={clearInput}>
-            X
-          </span>
-        </div>
-        <div className="form-item">
-          <input
-            name="lastName"
-            type="text"
-            placeholder="Last name"
-            value={lastName}
-            onChange={onInputChange}
-          />
-          <span className="btn-clear" onClick={clearInput}>
-            X
-          </span>
-        </div>
-        <div className="form-item">
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={onInputChange}
-          />
-          <span className="btn-clear" onClick={clearInput}>
-            X
-          </span>
-        </div>
-        <div className="form-item">
-          <input
-            name="phone"
-            type="tel"
-            placeholder="Phone"
-            value={phone}
-            onChange={onInputChange}
-          />
-          <span className="btn-clear" onClick={clearInput}>
-            X
-          </span>
-        </div>
-      </div>
-      <div className="form-buttons">
-        <button type="submit">Save</button>
-        {id ? (
-          <button type="button" onClick={onDeleteContact}>
-            Delete
-          </button>
-        ) : (
-          ""
-        )}
-      </div>
-    </form>
+    <Formik
+      initialValues={formData}
+      onSubmit={onFormSubmit}
+      validationSchema={shema}
+      enableReinitialize
+      innerRef={formikRef}
+    >
+      {contactForm}
+    </Formik>
   );
 }
 
